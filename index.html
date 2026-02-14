@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community of Practice Assessment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+        /* Mobile-optimized styles */
+        @media (max-width: 640px) {
+            .mobile-scroll {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div id="app" class="p-3 sm:p-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
+                    Community of Practice Assessment
+                </h1>
+                <p class="text-sm sm:text-base text-gray-600">
+                    Self-Assessment: Where Is Your CoP?
+                </p>
+                
+                <div class="flex flex-wrap gap-2 sm:gap-4 mt-4">
+                    <button onclick="showView('survey')" id="surveyBtn" class="flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-lg font-medium transition-colors bg-indigo-600 text-white text-sm sm:text-base">
+                        Take Assessment
+                    </button>
+                    <button onclick="showView('results')" id="resultsBtn" class="flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-lg font-medium transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm sm:text-base">
+                        View Results
+                    </button>
+                </div>
+
+                <div id="resultsHeader" class="hidden flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 mt-4 pt-4 border-t">
+                <div id="resultsHeader" class="hidden flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 mt-4 pt-4 border-t">
+                    <div class="flex items-center gap-2 text-gray-700">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                        <span class="font-medium text-sm sm:text-base"><span id="participantCount">0</span> Participants</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+                        <button onclick="refreshData()" id="refreshBtn" class="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs sm:text-sm">
+                            <svg id="refreshIcon" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            <span class="hidden sm:inline">Refresh Data</span>
+                            <span class="sm:hidden">Refresh</span>
+                        </button>
+                        <button onclick="exportToCSV()" id="exportBtn" class="flex items-center gap-2 px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs sm:text-sm">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            <span class="hidden sm:inline">Export CSV</span>
+                            <span class="sm:hidden">Export</span>
+                        </button>
+                        <button onclick="clearAllData()" class="flex items-center gap-2 px-3 sm:px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-xs sm:text-sm">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                            <span class="hidden sm:inline">Clear All Data</span>
+                            <span class="sm:hidden">Clear</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Survey View -->
+            <div id="surveyView" class="bg-white rounded-lg shadow-lg p-4 sm:p-8">
+                <div class="mb-6">
+                    <p class="text-sm sm:text-base text-gray-700 mb-4">
+                        Rate your community on each dimension (1 = nascent, 5 = mature):
+                    </p>
+                    <div class="flex flex-col space-y-1 text-xs sm:text-sm text-gray-600 mb-6 sm:mb-8">
+                        <div class="flex items-center gap-2">
+                            <span class="font-semibold w-4">1</span>
+                            <span>Nascent</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-semibold w-4">2</span>
+                            <span>Developing</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-semibold w-4">3</span>
+                            <span>Moderate</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-semibold w-4">4</span>
+                            <span>Strong</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-semibold w-4">5</span>
+                            <span>Mature</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Domain Section -->
+                <div class="mb-6 sm:mb-8">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4 border-b-2 border-indigo-200 pb-2">
+                        DOMAIN (Shared Competence & Identity)
+                    </h2>
+                    
+                    <div class="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                        <p class="text-sm sm:text-base text-gray-800 mb-3">Members clearly articulate what distinguishes military psychology practice</p>
+                        <div class="flex gap-3 sm:gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="d1" value="1" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">1</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="d1" value="2" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">2</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="d1" value="3" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">3</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="d1" value="4" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">4</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="d1" value="5" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">5</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                        <p class="text-sm sm:text-base text-gray-800 mb-3">There is shared language and conceptual frameworks we reference regularly</p>
+                        <div class="flex gap-3 sm:gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="d2" value="1" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">1</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="d2" value="2" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">2</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="d2" value="3" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">3</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="d2" value="4" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">4</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="d2" value="5" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">5</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                        <p class="text-sm sm:text-base text-gray-800 mb-3">Members identify as part of this community, not just attendees</p>
+                        <div class="flex gap-3 sm:gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="d3" value="1" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">1</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="d3" value="2" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">2</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="d3" value="3" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">3</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="d3" value="4" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">4</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="d3" value="5" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">5</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                        <p class="text-sm sm:text-base text-gray-800 mb-3">New developments in the field are actively discussed and debated</p>
+                        <div class="flex gap-3 sm:gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="d4" value="1" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">1</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="d4" value="2" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">2</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="d4" value="3" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">3</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="d4" value="4" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">4</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="d4" value="5" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">5</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Community Section -->
+                <div class="mb-6 sm:mb-8">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4 border-b-2 border-indigo-200 pb-2">
+                        COMMUNITY (Relationships & Mutual Engagement)
+                    </h2>
+                    
+                    <div class="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                        <p class="text-sm sm:text-base text-gray-800 mb-3">Members know each other's areas of expertise and consult beyond formal sessions</p>
+                        <div class="flex gap-3 sm:gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="c1" value="1" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">1</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="c1" value="2" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">2</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="c1" value="3" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">3</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="c1" value="4" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">4</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="c1" value="5" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">5</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                        <p class="text-sm sm:text-base text-gray-800 mb-3">Psychological safety exists—members openly discuss challenges and mistakes</p>
+                        <div class="flex gap-3 sm:gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="c2" value="1" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">1</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="c2" value="2" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">2</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="c2" value="3" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">3</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="c2" value="4" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">4</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="c2" value="5" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">5</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                        <p class="text-sm sm:text-base text-gray-800 mb-3">There are rituals and traditions that bond the group (inside jokes, shared experiences)</p>
+                        <div class="flex gap-3 sm:gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="c3" value="1" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">1</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="c3" value="2" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">2</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="c3" value="3" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">3</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="c3" value="4" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">4</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="c3" value="5" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">5</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                        <p class="text-sm sm:text-base text-gray-800 mb-3">Informal learning happens through spontaneous interactions, not just scheduled meetings</p>
+                        <div class="flex gap-3 sm:gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="c4" value="1" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">1</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="c4" value="2" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">2</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="c4" value="3" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">3</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="c4" value="4" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">4</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="c4" value="5" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">5</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Practice Section -->
+                <div class="mb-6 sm:mb-8">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4 border-b-2 border-indigo-200 pb-2">
+                        PRACTICE (Shared Repertoire & Application)
+                    </h2>
+                    
+                    <div class="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                        <p class="text-sm sm:text-base text-gray-800 mb-3">Members regularly share tools, cases, and resources with each other</p>
+                        <div class="flex gap-3 sm:gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="p1" value="1" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">1</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="p1" value="2" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">2</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="p1" value="3" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">3</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="p1" value="4" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">4</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="p1" value="5" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">5</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                        <p class="text-sm sm:text-base text-gray-800 mb-3">Knowledge gained in sessions is applied to work within the following month</p>
+                        <div class="flex gap-3 sm:gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="p2" value="1" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">1</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="p2" value="2" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">2</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="p2" value="3" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">3</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="p2" value="4" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">4</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="p2" value="5" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">5</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                        <p class="text-sm sm:text-base text-gray-800 mb-3">The community produces artifacts (protocols, guidelines, case libraries)</p>
+                        <div class="flex gap-3 sm:gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="p3" value="1" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">1</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="p3" value="2" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">2</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="p3" value="3" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">3</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="p3" value="4" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">4</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="p3" value="5" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">5</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 sm:mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                        <p class="text-sm sm:text-base text-gray-800 mb-3">There's a rhythm of experimentation: try → reflect → refine → share</p>
+                        <div class="flex gap-3 sm:gap-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="p4" value="1" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">1</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="p4" value="2" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">2</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="p4" value="3" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">3</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="p4" value="4" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">4</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="p4" value="5" class="w-4 h-4 text-indigo-600">
+                                <span class="text-sm sm:text-base text-gray-700">5</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="submitAssessment()" class="w-full py-3 bg-indigo-600 text-white rounded-lg font-bold text-base sm:text-lg hover:bg-indigo-700 transition-colors">
+                    Submit Assessment
+                </button>
+            </div>
+
+            <!-- Results View -->
+            <div id="resultsView" class="bg-white rounded-lg shadow-lg p-4 sm:p-8 hidden">
+                <div id="noResults" class="text-center py-8 sm:py-12">
+                    <svg class="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    <p class="text-lg sm:text-xl text-gray-600">No responses yet.</p>
+                    <p class="text-sm sm:text-base text-gray-500 mt-2">Complete the assessment to see results.</p>
+                </div>
+
+                <div id="matrixContainer" class="hidden">
+                    <div class="mb-4 sm:mb-6">
+                        <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
+                            CoP Maturity Matrix
+                        </h2>
+                        <p class="text-xs sm:text-sm text-gray-600">
+                            Items are placed based on average scores: High (≥3.67), Medium (2.33-3.66), Low (&lt;2.33)
+                        </p>
+                    </div>
+
+                    <div class="overflow-x-auto mobile-scroll">
+                        <table class="w-full border-collapse min-w-[600px]">
+                            <thead>
+                                <tr>
+                                    <th class="border-2 border-gray-300 bg-gray-100 p-2 sm:p-3 text-left font-bold text-xs sm:text-sm">
+                                        Maturity Level
+                                    </th>
+                                    <th class="border-2 border-gray-300 bg-indigo-100 p-2 sm:p-3 text-center font-bold text-xs sm:text-sm">
+                                        DOMAIN
+                                    </th>
+                                    <th class="border-2 border-gray-300 bg-blue-100 p-2 sm:p-3 text-center font-bold text-xs sm:text-sm">
+                                        COMMUNITY
+                                    </th>
+                                    <th class="border-2 border-gray-300 bg-green-100 p-2 sm:p-3 text-center font-bold text-xs sm:text-sm">
+                                        PRACTICE
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="border-2 border-gray-300 bg-gray-50 p-2 sm:p-3 font-bold text-gray-700 align-top text-xs sm:text-sm">High</td>
+                                    <td id="domain-high" class="border-2 border-gray-300 p-2 sm:p-3 align-top bg-indigo-50"></td>
+                                    <td id="community-high" class="border-2 border-gray-300 p-2 sm:p-3 align-top bg-blue-50"></td>
+                                    <td id="practice-high" class="border-2 border-gray-300 p-2 sm:p-3 align-top bg-green-50"></td>
+                                </tr>
+                                <tr>
+                                    <td class="border-2 border-gray-300 bg-gray-50 p-2 sm:p-3 font-bold text-gray-700 align-top text-xs sm:text-sm">Medium</td>
+                                    <td id="domain-medium" class="border-2 border-gray-300 p-2 sm:p-3 align-top bg-indigo-50"></td>
+                                    <td id="community-medium" class="border-2 border-gray-300 p-2 sm:p-3 align-top bg-blue-50"></td>
+                                    <td id="practice-medium" class="border-2 border-gray-300 p-2 sm:p-3 align-top bg-green-50"></td>
+                                </tr>
+                                <tr>
+                                    <td class="border-2 border-gray-300 bg-gray-50 p-2 sm:p-3 font-bold text-gray-700 align-top text-xs sm:text-sm">Low</td>
+                                    <td id="domain-low" class="border-2 border-gray-300 p-2 sm:p-3 align-top bg-indigo-50"></td>
+                                    <td id="community-low" class="border-2 border-gray-300 p-2 sm:p-3 align-top bg-blue-50"></td>
+                                    <td id="practice-low" class="border-2 border-gray-300 p-2 sm:p-3 align-top bg-green-50"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, push, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        // TODO: Replace with your Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyA7U3YiWbzdPgEcvO01zUK_RYn2KuWwRIc",
+            authDomain: "dpd-cop.firebaseapp.com",
+            databaseURL: "https://dpd-cop-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "dpd-cop",
+            storageBucket: "dpd-cop.firebasestorage.app",
+            messagingSenderId: "107304166496",
+            appId: "1:107304166496:web:24d4679ab2020a53304f05"
+        };
+
+        // Initialize Firebase
+        let app, database;
+        try {
+            app = initializeApp(firebaseConfig);
+            database = getDatabase(app);
+            console.log('Firebase initialized successfully');
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+        }
+
+        // Make functions available globally
+        window.firebaseDB = database;
+        window.firebaseRef = ref;
+        window.firebasePush = push;
+        window.firebaseOnValue = onValue;
+        window.firebaseRemove = remove;
+    </script>
+
+    <script>
+        const surveyItems = [
+            { id: 'd1', dimension: 'Domain', text: 'Members clearly articulate what distinguishes military psychology practice' },
+            { id: 'd2', dimension: 'Domain', text: 'There is shared language and conceptual frameworks we reference regularly' },
+            { id: 'd3', dimension: 'Domain', text: 'Members identify as part of this community, not just attendees' },
+            { id: 'd4', dimension: 'Domain', text: 'New developments in the field are actively discussed and debated' },
+            { id: 'c1', dimension: 'Community', text: 'Members know each other\'s areas of expertise and consult beyond formal sessions' },
+            { id: 'c2', dimension: 'Community', text: 'Psychological safety exists—members openly discuss challenges and mistakes' },
+            { id: 'c3', dimension: 'Community', text: 'There are rituals and traditions that bond the group (inside jokes, shared experiences)' },
+            { id: 'c4', dimension: 'Community', text: 'Informal learning happens through spontaneous interactions, not just scheduled meetings' },
+            { id: 'p1', dimension: 'Practice', text: 'Members regularly share tools, cases, and resources with each other' },
+            { id: 'p2', dimension: 'Practice', text: 'Knowledge gained in sessions is applied to work within the following month' },
+            { id: 'p3', dimension: 'Practice', text: 'The community produces artifacts (protocols, guidelines, case libraries)' },
+            { id: 'p4', dimension: 'Practice', text: 'There\'s a rhythm of experimentation: try → reflect → refine → share' },
+        ];
+
+        let responses = [];
+
+        // Load responses from Firebase on page load
+        window.onload = function() {
+            if (window.firebaseDB) {
+                const responsesRef = window.firebaseRef(window.firebaseDB, 'responses');
+                window.firebaseOnValue(responsesRef, (snapshot) => {
+                    responses = [];
+                    snapshot.forEach((childSnapshot) => {
+                        responses.push({
+                            firebaseKey: childSnapshot.key,
+                            ...childSnapshot.val()
+                        });
+                    });
+                    updateParticipantCount();
+                    if (document.getElementById('resultsView').classList.contains('hidden') === false) {
+                        displayResults();
+                    }
+                });
+            } else {
+                console.warn('Firebase not initialized - using localStorage fallback');
+                loadResponsesFromLocalStorage();
+            }
+        };
+
+        function loadResponsesFromLocalStorage() {
+            const stored = localStorage.getItem('cop_responses');
+            if (stored) {
+                responses = JSON.parse(stored);
+            }
+            updateParticipantCount();
+        }
+
+        function showView(view) {
+            const surveyView = document.getElementById('surveyView');
+            const resultsView = document.getElementById('resultsView');
+            const surveyBtn = document.getElementById('surveyBtn');
+            const resultsBtn = document.getElementById('resultsBtn');
+            const resultsHeader = document.getElementById('resultsHeader');
+
+            // Hide all views
+            surveyView.classList.add('hidden');
+            resultsView.classList.add('hidden');
+
+            // Reset all buttons
+            [surveyBtn, resultsBtn].forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+            });
+
+            if (view === 'survey') {
+                surveyView.classList.remove('hidden');
+                surveyBtn.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                surveyBtn.classList.add('bg-indigo-600', 'text-white');
+                resultsHeader.classList.add('hidden');
+            } else if (view === 'results') {
+                resultsView.classList.remove('hidden');
+                resultsBtn.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                resultsBtn.classList.add('bg-indigo-600', 'text-white');
+                resultsHeader.classList.remove('hidden');
+                resultsHeader.classList.add('flex');
+                displayResults();
+            }
+        }
+
+        function showInstructions() {
+            // Function removed - no longer needed
+        }
+
+        function submitAssessment() {
+            const currentResponse = {};
+            let allRated = true;
+
+            surveyItems.forEach(item => {
+                const selected = document.querySelector(`input[name="${item.id}"]:checked`);
+                if (selected) {
+                    currentResponse[item.id] = parseInt(selected.value);
+                } else {
+                    allRated = false;
+                }
+            });
+
+            if (!allRated) {
+                alert('Please rate all items before submitting.');
+                return;
+            }
+
+            const newResponse = {
+                id: Date.now(),
+                timestamp: new Date().toISOString(),
+                ratings: currentResponse
+            };
+
+            // Save to Firebase
+            if (window.firebaseDB) {
+                const responsesRef = window.firebaseRef(window.firebaseDB, 'responses');
+                window.firebasePush(responsesRef, newResponse);
+            } else {
+                // Fallback to localStorage
+                responses.push(newResponse);
+                localStorage.setItem('cop_responses', JSON.stringify(responses));
+            }
+
+            // Clear form
+            document.querySelectorAll('input[type="radio"]').forEach(input => {
+                input.checked = false;
+            });
+
+            updateParticipantCount();
+            showView('results');
+        }
+
+        function updateParticipantCount() {
+            document.getElementById('participantCount').textContent = responses.length;
+        }
+
+        function refreshData() {
+            const refreshIcon = document.getElementById('refreshIcon');
+            refreshIcon.classList.add('animate-spin');
+            
+            // Data is already live-updated from Firebase
+            displayResults();
+            
+            setTimeout(() => {
+                refreshIcon.classList.remove('animate-spin');
+            }, 500);
+        }
+
+        function calculateItemAverage(itemId) {
+            if (responses.length === 0) return 0;
+            const sum = responses.reduce((acc, resp) => acc + (resp.ratings[itemId] || 0), 0);
+            return sum / responses.length;
+        }
+
+        function getMatrixCategory(average) {
+            if (average >= 3.67) return 'high';
+            if (average >= 2.33) return 'medium';
+            return 'low';
+        }
+
+        function displayResults() {
+            if (responses.length === 0) {
+                document.getElementById('noResults').classList.remove('hidden');
+                document.getElementById('matrixContainer').classList.add('hidden');
+                return;
+            }
+
+            document.getElementById('noResults').classList.add('hidden');
+            document.getElementById('matrixContainer').classList.remove('hidden');
+
+            const matrix = {
+                Domain: { high: [], medium: [], low: [] },
+                Community: { high: [], medium: [], low: [] },
+                Practice: { high: [], medium: [], low: [] }
+            };
+
+            surveyItems.forEach(item => {
+                const avg = calculateItemAverage(item.id);
+                const category = getMatrixCategory(avg);
+                matrix[item.dimension][category].push({
+                    ...item,
+                    average: avg
+                });
+            });
+
+            // Update matrix cells
+            ['Domain', 'Community', 'Practice'].forEach(dimension => {
+                ['high', 'medium', 'low'].forEach(level => {
+                    const cellId = `${dimension.toLowerCase()}-${level}`;
+                    const cell = document.getElementById(cellId);
+                    const items = matrix[dimension][level];
+
+                    if (items.length === 0) {
+                        cell.innerHTML = '<p class="text-gray-400 italic text-xs sm:text-sm">No items</p>';
+                    } else {
+                        const colorMap = {
+                            Domain: 'indigo',
+                            Community: 'blue',
+                            Practice: 'green'
+                        };
+                        const color = colorMap[dimension];
+
+                        const itemsHtml = items.map(item => `
+                            <li class="text-xs sm:text-sm mb-2">
+                                <div class="flex items-start gap-2">
+                                    <span class="font-semibold text-${color}-700 min-w-[2.5rem] sm:min-w-[3rem]">
+                                        ${item.average.toFixed(2)}
+                                    </span>
+                                    <span class="text-sm sm:text-base text-gray-700">${item.text}</span>
+                                </div>
+                            </li>
+                        `).join('');
+
+                        cell.innerHTML = `<ul class="space-y-1 sm:space-y-2">${itemsHtml}</ul>`;
+                    }
+                });
+            });
+        }
+
+        function exportToCSV() {
+            if (responses.length === 0) {
+                alert('No responses to export.');
+                return;
+            }
+
+            let csv = 'Participant ID,Timestamp,';
+            surveyItems.forEach(item => {
+                csv += `"${item.dimension}: ${item.text}",`;
+            });
+            csv += '\n';
+
+            responses.forEach(resp => {
+                csv += `${resp.id},"${resp.timestamp}",`;
+                surveyItems.forEach(item => {
+                    csv += `${resp.ratings[item.id] || ''},`;
+                });
+                csv += '\n';
+            });
+
+            csv += '\n\nSummary Statistics\n';
+            csv += 'Item,Dimension,Average Score,Category\n';
+            surveyItems.forEach(item => {
+                const avg = calculateItemAverage(item.id);
+                const category = getMatrixCategory(avg);
+                csv += `"${item.text}","${item.dimension}",${avg.toFixed(2)},"${category}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `cop_assessment_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function clearAllData() {
+            if (!confirm('Are you sure you want to delete ALL responses? This cannot be undone!')) {
+                return;
+            }
+
+            if (window.firebaseDB) {
+                const responsesRef = window.firebaseRef(window.firebaseDB, 'responses');
+                window.firebaseRemove(responsesRef)
+                    .then(() => {
+                        alert('All data cleared successfully!');
+                        responses = [];
+                        updateParticipantCount();
+                        displayResults();
+                    })
+                    .catch((error) => {
+                        alert('Error clearing data: ' + error.message);
+                    });
+            } else {
+                localStorage.removeItem('cop_responses');
+                responses = [];
+                updateParticipantCount();
+                displayResults();
+                alert('All data cleared successfully!');
+            }
+        }
+    </script>
+</body>
+</html>
